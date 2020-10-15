@@ -1,0 +1,111 @@
+---
+title: "CSCI 385 - First Deliverable"
+author: "Justin Miller"
+date: "9/26/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(DT)
+library(tidyverse)
+library(ggplot2)
+```
+# Introduction
+
+Can we predict the next popular song. If so what genre will it be, who will sing it, will it be a solo artist or a band and how long will that song be popular? For my project I plan on looking at if we can predict the next big music hit on the billboard top 100.
+
+# Data Set
+
+```{r}
+#Found: https://www.kaggle.com/yamaerenay/spotify-dataset-19212020-160k-tracks
+Spotify <- read.csv(file.path("Spotify.csv")) #Spotify
+head(Spotify)
+
+#Found: https://data.world/kcmillersean/billboard-hot-100-1958-2017
+hot100 <- read.csv(file.path("HotStuff.csv")) #Billboard Data Set
+head(hot100)
+
+```
+
+# Comments
+I found two really good datasets while researching my topic. The first was the historical data for the billboard top 100. This contains data from 1950s to modern day, with each entry being a song and how it ranked that week.Next I found spotify's dataset on music on their service. It has data by a machine learning algorithm, determining a song's characteristics. Sadly it lacks any numerical streaming data. A handful of it's variables are a little archaic, so I put definitions for them below. For this project I really wanted to find streaming data for websites like spotify or apple music, but it seems that streaming numbers are locked behind a paywall for all of the major streaming services. I will continue looking for datasets that contain streaming data, though it seems unlikely I will find any.
+
+
+Spotify variable Notes:
+Mode: Major or Minior 
+Key: Music Key related to notes (0 = C, 1 = C#, 2 = D, ..ect)
+
+
+# Making Tidy Data
+
+```{r}
+#Cleaning Spotify Dataset
+select(Spotify, -c(id))
+Spotify %>% drop_na(artists,name)
+
+#Cleaning Billboard Hotstuff Dataset
+select(hot100, -c(ï..url))
+hot100 %>% drop_na(Song,Performer)
+
+       
+```
+
+In Spotify's and Billboard100's datasets they both had very tidy data, which made it nice for me. This makes sense since both of these datasets are made by companies that value data. Spotify for their streaming metrics and Billboard's whole purpose being to maintain these weekly rankings. I made sure to remove any NA's from critical fields such song title and weekly position, just incase there were mising values.
+
+
+# Exploratory Data Analysis
+
+# Looking at Spotify Dataset
+```{r}
+summary(Spotify)
+```
+Starting off I looked at the summary data. Looking for any strange outlier everything seemed to make sense. The only werid thing was that some variables had 0 for the minimum where it really wouldn't make sense. These variables would be danceability, tempo, energy, liveness. All of these shouldn't really be 0 unless the music being interpretted isn't really music. This could be a possibility since anyone can upload their music to spotify. Also its worth nothing that the shortest song in the dataset was measured at 5 seconds, which i'm hard pressed to consider that a song. I should go in later to see what that song is and see if it's possibility a jingle for a company or something of that variety 
+
+
+```{r}
+ggplot(Spotify, aes(x=year)) + scale_x_continuous(name="Release Date", breaks = seq(1920, 2020,10)) + geom_histogram(binwidth=10,color="darkblue", fill="lightblue")
+```
+I then thought, I should look at when the songs in this dataset are primarily taking place. It seems that this dataset is selectively sampled by spotify since it looking like their is a hard cap of 20,000 for the 10 year period. I quicked changed the parameters to see if that meant there was only 2,000 songs from each year and that was in fact the case. 2020 also was significantly smaller than the previous decades, even though the dataset should be sampling from modern day.
+
+
+```{r}
+ggplot(Spotify, aes(x=popularity)) +
+    geom_histogram(binwidth = 1,color="darkblue", fill="lightblue")
+```
+Next I looked at the popularity ranking, which is an arbitary number that Spotify uses to how popular a track is using their streaming data. The data makes sense as most songs uploaded are extremely unknown songs by small bands, with a few very small select songs ranking towards the last quarter of the histogram. 
+```{r}
+ggplot(Spotify, aes(x=danceability, y=popularity)) +
+  geom_point(size=1)
+```
+I next wanted to see if I could poke at the Spotify algorithm to see if danceability related to the popularity of the song. From the graph, I was very much off the mark. I tried this with a couple other Spotify variables and still didn't get any real definitive trend.
+
+
+
+#Looking at the top 100 dataset 
+```{r}
+summary(hot100)
+```
+Next I took the sumary of the Billboard dataset. Looking at the values all seemed to make sense no real outliers that had me concerned.
+
+```{r}
+top10Songs <- count(hot100, SongID, sort = TRUE)
+tail(top10Songs[order(top10Songs$n),],10)
+```
+I first wanted to see the most popular songs on the billboard. This was calculating the cumulative time spent on the billboard at any place. The results look clear as these are all familiar songs and artists to me. 
+
+```{r}
+top10Artists <- count(hot100, Performer, sort = TRUE)
+tail(top10Artists[order(top10Artists$n),],10)
+```
+
+Next I wanted to look at the most commonly appearing artists on the billboard top 100. Its interesting to see that all the artists in this list are different from the artists whose songs have been on the billboard the longest. 
+
+# Data Science Questions
+
+People often label the most popular and mainstream songs as mechanical and souless at times. The reasoning for this is because big music labels will put out almost meaningless music with big name singers behind the song. Though personally I don't believe this, I thought it would be interesting to look into. I'm very passionate about music and thought this would be a great opportunity to create some overlap with a hobby and school work. For this project I want to see if I predict the genre and other features about the next Billboard 100 hit. 
+
+# Potential WMD?
+
+Ultimately I don't think I could really turn this project into a WMD. The worst (and best?) possible case would be able to consistently determine characteristics of a hit radio song. I'd be hard pressed to imagine that something similar to this project is being done by a majority of all the large record labels already on larger datasets. For scale I think that my project will be scale to be more accurate with more data, but the people it affects would ultimately be the same.
+
