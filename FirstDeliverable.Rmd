@@ -43,11 +43,11 @@ Key: Music Key related to notes (0 = C, 1 = C#, 2 = D, ..ect)
 
 ```{r}
 #Cleaning Spotify Dataset
-select(Spotify, -c(id))
+Spotify <- select(Spotify, -c(id))
 Spotify %>% drop_na(artists,name)
 
 #Cleaning Billboard Hotstuff Dataset
-select(hot100, -c(ï..url))
+hot100 <- select(hot100, -c(ï..url))
 hot100 %>% drop_na(Song,Performer)
 
        
